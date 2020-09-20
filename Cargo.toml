@@ -1,0 +1,12 @@
+[package]
+name = "plotters_in_orbtk"
+version = "0.1.0"
+authors = ["arctic-alpaca <67190338+arctic-alpaca@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+orbtk = { git = "https://github.com/redox-os/orbtk.git", branch = "develop" }
+plotters = "^0.3.0"
+orbtk_backend = {path = "orbtk_backend"}
