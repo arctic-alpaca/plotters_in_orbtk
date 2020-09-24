@@ -39,12 +39,13 @@ impl<'a> OrbtkBackend<'a> {
         Ok(ret)
     }
     pub fn color_change(&self, color: &BackendColor) -> Color {
-        Color::rgba(
-            (f32::from(color.rgb.0)) as u8,
-            (f32::from(color.rgb.1)) as u8,
-            (f32::from(color.rgb.2)) as u8,
+        /*Color::rgba(
+            color.rgb.0,
+            color.rgb.1,
+            color.rgb.2,
             (color.alpha * 255.0) as u8,
-        )
+        );*/
+        Color::rgb(color.rgb.0, color.rgb.1, color.rgb.2)
     }
 }
 
@@ -68,10 +69,12 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         point: (i32, i32),
         color: BackendColor,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
+        println!("draw_pixel");
         self.render_ctx.begin_path();
+        self.render_ctx.set_alpha(color.alpha as f32);
         self.render_ctx
             .set_fill_style(utils::Brush::SolidColor(self.color_change(&color)));
-        println!("{:#?}", point);
+
         self.render_ctx
             .fill_rect(point.0 as f64, point.1 as f64, 1.0, 1.0);
         Ok(())
@@ -83,11 +86,13 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         to: (i32, i32),
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let color = style.color();
-        self.render_ctx.set_line_width(style.stroke_width() as f64);
-        self.render_ctx
-            .set_stroke_style(utils::Brush::SolidColor(self.color_change(&color)));
+        println!("draw_line");
         self.render_ctx.begin_path();
+        self.render_ctx.set_line_width(style.stroke_width() as f64);
+        self.render_ctx.set_alpha(style.color().alpha as f32);
+        self.render_ctx
+            .set_stroke_style(utils::Brush::SolidColor(self.color_change(&style.color())));
+
         self.render_ctx.move_to(from.0 as f64, from.1 as f64);
         self.render_ctx.line_to(to.0 as f64, to.1 as f64);
 
@@ -103,19 +108,20 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         style: &S,
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
+        println!("draw_rect");
         self.render_ctx.begin_path();
-        let color = style.color();
+        self.render_ctx.set_alpha(style.color().alpha as f32);
         let width = (bottom_right.0 - upper_left.0) as f64;
         let height = (bottom_right.1 - upper_left.1) as f64;
         if fill {
             self.render_ctx
-                .set_fill_style(utils::Brush::SolidColor(self.color_change(&color)));
+                .set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
             self.render_ctx
                 .fill_rect(upper_left.0 as f64, upper_left.1 as f64, width, height);
         } else {
             self.render_ctx.set_line_width(style.stroke_width() as f64);
             self.render_ctx
-                .set_stroke_style(utils::Brush::SolidColor(self.color_change(&color)));
+                .set_stroke_style(utils::Brush::SolidColor(self.color_change(&style.color())));
             self.render_ctx
                 .stroke_rect(upper_left.0 as f64, upper_left.1 as f64, width, height);
         }
@@ -128,11 +134,13 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         path: I,
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let color = style.color();
+        println!("draw_path");
         self.render_ctx.begin_path();
         self.render_ctx.set_line_width(style.stroke_width() as f64);
+        self.render_ctx.set_alpha(style.color().alpha as f32);
         self.render_ctx
-            .set_stroke_style(utils::Brush::SolidColor(self.color_change(&color)));
+            .set_stroke_style(utils::Brush::SolidColor(self.color_change(&style.color())));
+
         let iterator = path.into_iter();
         for (index, point) in iterator.enumerate() {
             if index == 0 {
@@ -141,6 +149,7 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
                 self.render_ctx.line_to(point.0 as f64, point.1 as f64);
             }
         }
+
         self.render_ctx.stroke();
 
         Ok(())
@@ -153,11 +162,13 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         style: &S,
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let color = style.color();
+        println!("draw_circle");
         self.render_ctx.begin_path();
+        self.render_ctx.set_alpha(style.color().alpha as f32);
+
         if fill {
             self.render_ctx
-                .set_fill_style(utils::Brush::SolidColor(self.color_change(&color)));
+                .set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
             self.render_ctx.arc(
                 center.0 as f64,
                 center.1 as f64,
@@ -168,7 +179,7 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
             self.render_ctx.fill();
         } else {
             self.render_ctx
-                .set_stroke_style(utils::Brush::SolidColor(self.color_change(&color)));
+                .set_stroke_style(utils::Brush::SolidColor(self.color_change(&style.color())));
             self.render_ctx.set_line_width(style.stroke_width() as f64);
             self.render_ctx.arc(
                 center.0 as f64,
@@ -188,10 +199,11 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         vert: I,
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let color = style.color();
+        println!("fill_polygon");
         self.render_ctx.begin_path();
+        self.render_ctx.set_alpha(style.color().alpha as f32);
         self.render_ctx
-            .set_fill_style(utils::Brush::SolidColor(self.color_change(&color)));
+            .set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
         for (index, point) in vert.into_iter().enumerate() {
             if index == 0 {
                 self.render_ctx.move_to(point.0 as f64, point.1 as f64);
@@ -212,30 +224,31 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         pos: (i32, i32),
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         let (mut x, mut y) = (pos.0, pos.1);
+        /*
+                let mut degree = match style.transform() {
+                    FontTransform::None => 0.0,
+                    FontTransform::Rotate90 => 90.0,
+                    FontTransform::Rotate180 => 180.0,
+                    FontTransform::Rotate270 => 270.0,
+                } / 180.0
+                    * std::f64::consts::PI;
 
-        let degree = match style.transform() {
-            FontTransform::None => 0.0,
-            FontTransform::Rotate90 => 90.0,
-            FontTransform::Rotate180 => 180.0,
-            FontTransform::Rotate270 => 270.0,
-        } / 180.0
-            * std::f64::consts::PI;
-
-        if degree != 0.0 {
-            self.render_ctx.save();
-            self.render_ctx.set_transform(
-                degree.cos(),
-                -degree.sin(),
-                degree.sin(),
-                degree.cos(),
-                x as f64,
-                y as f64,
-            );
-            x = 0;
-            y = 0;
-        }
-
+                if degree != 0.0 {
+                    self.render_ctx.save();
+                    self.render_ctx.set_transform(
+                        degree.cos(),
+                        -degree.sin(),
+                        degree.sin(),
+                        degree.cos(),
+                        x as f64,
+                        y as f64,
+                    );
+                    x = 0;
+                    y = 0;
+                }
+        */
         self.render_ctx.begin_path();
+        self.render_ctx.set_alpha(style.color().alpha as f32);
         self.render_ctx
             .set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
 
@@ -254,13 +267,14 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
             VPos::Bottom => -metrics.height,
         };
 
-        //
         self.render_ctx
             .fill_text(text, f64::from(x) + dx, f64::from(y) + dy);
-
+        /*
         if degree == 0.0 {
             self.render_ctx.restore();
         }
+        */
+
         Ok(())
     }
 
