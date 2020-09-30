@@ -7,8 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-plotters-backend = {path = "../plotters-backend"}
+plotters-backend = "0.3.*"#plotters-backend = {path = "../plotters-backend"}
 orbtk = { git = "https://github.com/redox-os/orbtk.git", branch = "develop" }
 
 [dev-dependencies]
-plotters = {path = "../plotters"}
+plotters = {version = "^0.3.0"}#plotters = {path = "../plotters"}

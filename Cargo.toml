@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 orbtk = { git = "https://github.com/redox-os/orbtk.git", branch = "develop"}
-plotters = {path = "plotters"}
+plotters = {version = "^0.3.0"}#plotters = {path = "plotters"}
 orbtk_backend = {path = "orbtk_backend"}

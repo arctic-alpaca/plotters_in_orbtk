@@ -683,7 +683,7 @@ name = "orbtk_backend"
 version = "0.1.0"
 dependencies = [
  "orbtk",
- "plotters-backend 0.3.0",
+ "plotters-backend",
 ]
 
 [[package]]
@@ -876,23 +876,21 @@ checksum = "d36492546b6af1463394d46f0c834346f31548646f6ba10849802c9c9a27ac33"
 [[package]]
 name = "plotters"
 version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45ca0ae5f169d0917a7c7f5a9c1a3d3d9598f18f529dd2b8373ed988efea307a"
 dependencies = [
  "chrono",
  "font-kit",
  "image 0.23.9",
  "lazy_static",
  "num-traits",
- "plotters-backend 0.3.0",
+ "plotters-backend",
  "plotters-bitmap",
  "plotters-svg",
  "rusttype 0.8.3",
  "wasm-bindgen",
  "web-sys",
 ]
-
-[[package]]
-name = "plotters-backend"
-version = "0.3.0"
 
 [[package]]
 name = "plotters-backend"
@@ -908,7 +906,7 @@ checksum = "59b0bdaf5194ad865c6225f5e82f5fdde700ce999d227471809551d6e0b1c557"
 dependencies = [
  "gif",
  "image 0.22.5",
- "plotters-backend 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "plotters-backend",
 ]
 
 [[package]]
@@ -917,7 +915,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b38a02e23bd9604b842a812063aec4ef702b57989c37b655254bb61c471ad211"
 dependencies = [
- "plotters-backend 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "plotters-backend",
 ]
 
 [[package]]
