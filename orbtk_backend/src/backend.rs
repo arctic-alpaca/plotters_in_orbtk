@@ -276,7 +276,12 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         render_ctx.set_alpha(style.color().alpha as f32);
         render_ctx.set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
 
-        render_ctx.fill_text(text, f64::from(x) + dx, f64::from(y) + dy);
+        //render_ctx.fill_text(text, f64::from(x) + dx, f64::from(y) + dy);
+        if degree != 0.0 {
+            render_ctx.fill_text(text, 0.0, 0.0);
+        } else {
+            render_ctx.fill_text(text, f64::from(x) + dx, f64::from(y) + dy);
+        }
         /*render_ctx.fill_rect(
             f64::from(x) + dx,
             f64::from(y) + dy,
