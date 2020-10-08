@@ -222,36 +222,44 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         let mut render_ctx = self.render_ctx.borrow_mut();
         let (mut x, mut y) = (pos.0, pos.1);
-        /*
-                let mut degree = match style.transform() {
-                    FontTransform::None => 0.0,
-                    FontTransform::Rotate90 => 90.0,
-                    FontTransform::Rotate180 => 180.0,
-                    FontTransform::Rotate270 => 270.0,
-                } / 180.0
-                    * std::f64::consts::PI;
+        let degree = match style.transform() {
+            FontTransform::None => 0.0_f64,
+            FontTransform::Rotate90 => 90.0_f64,
+            FontTransform::Rotate180 => 180.0_f64,
+            FontTransform::Rotate270 => 270.0_f64,
+        }
+        .to_radians();
 
-                if degree != 0.0 {
-                    render_ctx.save();
-                    render_ctx.set_transform(
-                        degree.cos(),
-                        -degree.sin(),
-                        degree.sin(),
-                        degree.cos(),
-                        x as f64,
-                        y as f64,
-                    );
-                    x = 0;
-                    y = 0;
-                }
-        */
-        render_ctx.begin_path();
-        render_ctx.set_alpha(style.color().alpha as f32);
-        render_ctx.set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
+        if degree != 0.0 {
+            println!("{}", degree);
+            render_ctx.save();
+            render_ctx.set_transform(
+                degree.cos(),
+                degree.sin(),
+                -degree.sin(),
+                degree.cos(),
+                x as f64,
+                y as f64,
+            );
+            x = 0;
+            y = 0;
+        }
 
         render_ctx.set_font_size(style.size());
         render_ctx.set_font_family("Roboto-Regular");
+
         let metrics = render_ctx.measure_text(text);
+        println!("text: {}", text);
+        match style.anchor().h_pos {
+            HPos::Left => println!("h_pos: left"),
+            HPos::Right => println!("h_pos: right"),
+            HPos::Center => println!("h_pos: center"),
+        };
+        match style.anchor().v_pos {
+            VPos::Top => println!("v_pos: top"),
+            VPos::Center => println!("v_pos: center"),
+            VPos::Bottom => println!("v_pos: bottom"),
+        };
 
         let dx = match style.anchor().h_pos {
             HPos::Left => 0.0,
@@ -264,12 +272,23 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
             VPos::Bottom => -metrics.height,
         };
 
+        render_ctx.begin_path();
+        render_ctx.set_alpha(style.color().alpha as f32);
+        render_ctx.set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
+
         render_ctx.fill_text(text, f64::from(x) + dx, f64::from(y) + dy);
-        /*
-                if degree == 0.0 {
-                    render_ctx.restore();
-                }
-        */
+        /*render_ctx.fill_rect(
+            f64::from(x) + dx,
+            f64::from(y) + dy,
+            metrics.width,
+            metrics.height,
+        );*/
+
+        if degree != 0.0 {
+            render_ctx.restore();
+            render_ctx.set_transform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        }
+
         Ok(())
     }
 

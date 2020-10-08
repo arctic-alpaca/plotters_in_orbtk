@@ -160,6 +160,7 @@ impl Template for MainView {
                         .render_pipeline(DefaultRenderPipeline(Box::new(
                             Graphic2DPipeline::default(),
                         )))
+                        .size(640, 480)
                         .margin(20)
                         .build(ctx),
                 )
