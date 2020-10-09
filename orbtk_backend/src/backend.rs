@@ -69,7 +69,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         point: (i32, i32),
         color: BackendColor,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        println!("draw_pixel");
         let mut render_ctx = self.render_ctx.borrow_mut();
         render_ctx.begin_path();
         render_ctx.set_alpha(color.alpha as f32);
@@ -86,7 +85,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         let mut render_ctx = self.render_ctx.borrow_mut();
-        println!("draw_line");
         render_ctx.begin_path();
         render_ctx.set_line_width(style.stroke_width() as f64);
         render_ctx.set_alpha(style.color().alpha as f32);
@@ -108,7 +106,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         let mut render_ctx = self.render_ctx.borrow_mut();
-        println!("draw_rect");
         render_ctx.begin_path();
         render_ctx.set_alpha(style.color().alpha as f32);
         let width = (bottom_right.0 - upper_left.0) as f64;
@@ -132,7 +129,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         let mut render_ctx = self.render_ctx.borrow_mut();
-        println!("draw_path");
         render_ctx.begin_path();
         render_ctx.set_line_width(style.stroke_width() as f64);
         render_ctx.set_alpha(style.color().alpha as f32);
@@ -160,7 +156,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         let mut render_ctx = self.render_ctx.borrow_mut();
-        println!("draw_circle");
         render_ctx.begin_path();
         render_ctx.set_alpha(style.color().alpha as f32);
 
@@ -197,7 +192,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
         let mut render_ctx = self.render_ctx.borrow_mut();
-        println!("fill_polygon");
         render_ctx.begin_path();
         render_ctx.set_alpha(style.color().alpha as f32);
         render_ctx.set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
@@ -231,7 +225,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         .to_radians();
 
         if degree != 0.0 {
-            println!("{}", degree);
             render_ctx.save();
             render_ctx.set_transform(
                 degree.cos(),
@@ -249,17 +242,6 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         render_ctx.set_font_family("Roboto-Regular");
 
         let metrics = render_ctx.measure_text(text);
-        println!("text: {}", text);
-        match style.anchor().h_pos {
-            HPos::Left => println!("h_pos: left"),
-            HPos::Right => println!("h_pos: right"),
-            HPos::Center => println!("h_pos: center"),
-        };
-        match style.anchor().v_pos {
-            VPos::Top => println!("v_pos: top"),
-            VPos::Center => println!("v_pos: center"),
-            VPos::Bottom => println!("v_pos: bottom"),
-        };
 
         let dx = match style.anchor().h_pos {
             HPos::Left => 0.0,
@@ -276,18 +258,11 @@ impl<'a> DrawingBackend for OrbtkBackend<'a> {
         render_ctx.set_alpha(style.color().alpha as f32);
         render_ctx.set_fill_style(utils::Brush::SolidColor(self.color_change(&style.color())));
 
-        //render_ctx.fill_text(text, f64::from(x) + dx, f64::from(y) + dy);
         if degree != 0.0 {
             render_ctx.fill_text(text, 0.0, 0.0);
         } else {
             render_ctx.fill_text(text, f64::from(x) + dx, f64::from(y) + dy);
         }
-        /*render_ctx.fill_rect(
-            f64::from(x) + dx,
-            f64::from(y) + dy,
-            metrics.width,
-            metrics.height,
-        );*/
 
         if degree != 0.0 {
             render_ctx.restore();

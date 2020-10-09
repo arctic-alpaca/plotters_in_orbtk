@@ -1,8 +1,9 @@
 use orbtk::prelude::*;
 use orbtk_backend::OrbtkBackend;
 use plotters::prelude::{
-    ChartBuilder, Circle, Color, EmptyElement, Histogram, IntoDrawingArea, IntoFont,
-    IntoSegmentedCoord, LineSeries, PathElement, PointSeries, Polygon, Text, RED, WHITE,
+    ChartBuilder, Circle, Color, DiscreteRanged, EmptyElement, Histogram, IntoDrawingArea,
+    IntoFont, IntoLinspace, IntoSegmentedCoord, LineSeries, PathElement, PointSeries, Polygon,
+    ShapeStyle, Text, BLACK, BLUE, RED, WHITE,
 };
 
 // OrbTk 2D drawing
@@ -11,7 +12,7 @@ struct Graphic2DPipeline;
 
 impl RenderPipeline for Graphic2DPipeline {
     fn draw(&self, render_target: &mut RenderTarget) {
-        let example = 1;
+        let example = 2;
         let mut render_context =
             RenderContext2D::new(render_target.width(), render_target.height());
 
@@ -27,7 +28,7 @@ impl RenderPipeline for Graphic2DPipeline {
             root.fill(&WHITE).unwrap();
             if example == 1 {
                 let mut chart = ChartBuilder::on(&root)
-                    .x_label_area_size(35)
+                    .x_label_area_size(40)
                     .y_label_area_size(40)
                     .margin(5)
                     .caption("Histogram Test", ("Roboto-Regular", 50))
@@ -101,7 +102,7 @@ impl RenderPipeline for Graphic2DPipeline {
                     .unwrap();
             } else if example == 3 {
                 let mut chart = ChartBuilder::on(&root)
-                    .caption("Koch's Snowflake", ("sans-serif", 50))
+                    .caption("Koch's Snowflake", ("Roboto-Regular", 50))
                     .build_cartesian_2d(-2.0..2.0, -1.5..1.5)
                     .unwrap();
 
@@ -127,6 +128,91 @@ impl RenderPipeline for Graphic2DPipeline {
                 chart
                     .draw_series(std::iter::once(PathElement::new(snowflake_vertices, &RED)))
                     .unwrap();
+            } else if example == 4 {
+                root.fill(&WHITE).unwrap();
+
+                let root = root.titled("Image Title", ("Roboto-Regular", 30)).unwrap();
+
+                let (upper, lower) = root.split_vertically(512);
+
+                let x_axis = (-3.4f32..3.4).step(0.1);
+
+                let mut cc = ChartBuilder::on(&upper)
+                    .margin(5)
+                    .set_all_label_area_size(50)
+                    .caption("Sine and Cosine", ("Roboto-Regular", 20))
+                    .build_cartesian_2d(-3.4f32..3.4, -1.2f32..1.2f32)
+                    .unwrap();
+
+                cc.configure_mesh()
+                    .x_labels(20)
+                    .y_labels(10)
+                    .disable_mesh()
+                    .x_label_formatter(&|v| format!("{:.1}", v))
+                    .y_label_formatter(&|v| format!("{:.1}", v))
+                    .draw()
+                    .unwrap();
+
+                cc.draw_series(LineSeries::new(x_axis.values().map(|x| (x, x.sin())), &RED))
+                    .unwrap()
+                    .label("Sine")
+                    .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+
+                cc.draw_series(LineSeries::new(
+                    x_axis.values().map(|x| (x, x.cos())),
+                    &BLUE,
+                ))
+                .unwrap()
+                .label("Cosine")
+                .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+
+                cc.configure_series_labels()
+                    .border_style(&BLACK)
+                    .draw()
+                    .unwrap();
+
+                /*
+                // It's possible to use a existing pointing element
+                 cc.draw_series(PointSeries::<_, _, Circle<_>>::new(
+                    (-3.0f32..2.1f32).step(1.0).values().map(|x| (x, x.sin())),
+                    5,
+                    Into::<ShapeStyle>::into(&RGBColor(255,0,0)).filled(),
+                )).unwrap();*/
+
+                // Otherwise you can use a function to construct your pointing element yourself
+                cc.draw_series(PointSeries::of_element(
+                    (-3.0f32..2.1f32).step(1.0).values().map(|x| (x, x.sin())),
+                    5,
+                    ShapeStyle::from(&RED).filled(),
+                    &|coord, size, style| {
+                        EmptyElement::at(coord)
+                            + Circle::new((0, 0), size, style)
+                            + Text::new(format!("{:?}", coord), (0, 15), ("Roboto-Regular", 15))
+                    },
+                ))
+                .unwrap();
+
+                let drawing_areas = lower.split_evenly((1, 2));
+
+                for (drawing_area, idx) in drawing_areas.iter().zip(1..) {
+                    let mut cc = ChartBuilder::on(&drawing_area)
+                        .x_label_area_size(30)
+                        .y_label_area_size(30)
+                        .margin_right(20)
+                        .caption(format!("y = x^{}", 1 + 2 * idx), ("Roboto-Regular", 20))
+                        .build_cartesian_2d(-1f32..1f32, -1f32..1f32)
+                        .unwrap();
+                    cc.configure_mesh().x_labels(5).y_labels(3).draw().unwrap();
+
+                    cc.draw_series(LineSeries::new(
+                        (-1f32..1f32)
+                            .step(0.01)
+                            .values()
+                            .map(|x| (x, x.powf(idx as f32 * 2.0 + 1.0))),
+                        &BLUE,
+                    ))
+                    .unwrap();
+                }
             }
         }
 
@@ -160,8 +246,8 @@ impl Template for MainView {
                         .render_pipeline(DefaultRenderPipeline(Box::new(
                             Graphic2DPipeline::default(),
                         )))
-                        .size(640, 480)
-                        .margin(20)
+                        //.size(640, 480)
+                        //.margin(20)
                         .build(ctx),
                 )
                 .build(ctx),
@@ -178,7 +264,7 @@ fn main() {
             Window::new()
                 .title("OrbTk - canvas example")
                 .position((100.0, 100.0))
-                .size(800.0, 800.0)
+                .size(1200.0, 800.0)
                 .resizeable(true)
                 .child(MainView::new().build(ctx))
                 .build(ctx)
